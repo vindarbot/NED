@@ -63,7 +63,5 @@ for id in ids:
 		continue
 
 	else:
-		for specie in species:
-			taxos.append(specie.text)
 		file_out.write(id.strip()+"\t"+species_name_with_strain+"\t"+";".join(taxos)+'\n')
 
