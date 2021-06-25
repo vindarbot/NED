@@ -48,15 +48,15 @@ for id in ids:
 	response = browser.submit()
 	soup = BeautifulSoup(response)
 
-	taxos = soup.find_all('a', {'alt': ['kingdom','phylum','class','order','family','genus','species']})
+	taxos = soup.find_all('a', {'alt': ['kingdom','phylum','class','order','family','genus']})
 	taxos = [tax.text for tax in taxos]
 	species = soup.find_all('a', {'title' : 'species'})
-	if len(species) == 0:
+	if len(species) > 0:
 		for specie in species:
 			taxos.append(specie.text)
 	else:
 		taxos.append(species_name)
-		
+
 	if len(taxos) == 0:
 		warnings.warn('TAXO NO FOUND FOR '+id+' ORGANISM.')
 		excluded_file.write(id+"\ttaxo not found on taxonomy browser.\n")
