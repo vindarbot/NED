@@ -97,9 +97,8 @@ def process_stats(nb_total, nb_over, nb_under, rank_to_observ_counts, pvalue, pa
 	p_adjusted = multipletests(to_adj, method='bonferroni', alpha=pvalue)
 
 	for j in range(len(list(p_adjusted[1]))):
-
+		padj = list(p_adjusted[1])[j]
 		if padj_filter:
-			padj = list(p_adjusted[1])[j]
 			if padj < pvalue:
 				sign_results[j].append(padj)
 
