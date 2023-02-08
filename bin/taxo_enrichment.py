@@ -43,12 +43,17 @@ def read_input_table(table, ranks, pvalue_deseq):
 		for categorie in ['all','over','under']:
 			rank_to_observ_to_count[rank][categorie] = defaultdict(int)
 	df = pd.read_csv(table, header=0, delimiter='\t')
+	df = df.apply(lambda x: x.str.replace(',','.'))
+	df["padj"] = df["padj"].astype(float)
+
 	NB_TOTAL = len(df.index)
 
 	df_over = df[df["padj"] < pvalue_deseq]
+	df_over['log2FoldChange'] = df_over['log2FoldChange'].astype(float)
 	df_over = df_over[df_over['log2FoldChange'] > 0]
 	NB_OVER = len(df_over.index)
 	df_under = df[df["padj"] < pvalue_deseq]
+	df_under['log2FoldChange'] = df_under['log2FoldChange'].astype(float)
 	df_under = df_under[df_under['log2FoldChange'] < 0]
 	NB_UNDER = len(df_under.index)
 
@@ -65,6 +70,15 @@ def read_input_table(table, ranks, pvalue_deseq):
 			rank_to_observ_to_count[rank]['all'][observ] += 1
 
 	return NB_TOTAL, NB_OVER, NB_UNDER, rank_to_observ_to_count
+
+
+def fdr(p_vals):
+
+    ranked_p_values = stats.rankdata(p_vals)
+    ranked_p_values = list(ranked_p_values)
+    fdr = [p_vals[i] * len(p_vals) / ranked_p_values[i] for i in range(len(p_vals))]
+
+    return fdr
 
 
 def process_stats(nb_total, nb_over, nb_under, rank_to_observ_counts, pvalue, padj_filter):
@@ -94,10 +108,10 @@ def process_stats(nb_total, nb_over, nb_under, rank_to_observ_counts, pvalue, pa
 					cur+=1
 
 
-	p_adjusted = multipletests(to_adj, method='bonferroni', alpha=pvalue)
+	p_adjusted = fdr(to_adj)
 
-	for j in range(len(list(p_adjusted[1]))):
-		padj = list(p_adjusted[1])[j]
+	for j in range(len(p_adjusted)):
+		padj = p_adjusted[j]
 		if padj_filter:
 			if padj < pvalue:
 				sign_results[j].append(padj)
